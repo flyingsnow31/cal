@@ -1,0 +1,2 @@
+buying,maint,doors,persons,lug_boot,safety,car_evaluation
+high,low,3,4,med,high,acc
