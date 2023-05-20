@@ -26,15 +26,12 @@ with open('test-tree.csv', encoding='utf-8-sig') as f:
                 row_data.append(value)  # 添加字符串到子列表
         test.append(row_data)
 f.close()
-# print(train[:10])
-# for t in train[1]:
-#     print(type(t))
-# print(type(train[1][1]))
+# print(cal.sum([1,2,3]))
 
-tree = cal.dt_init(train[1:], train[0], True)
-ans = cal.dt_predict(tree, test[1:], test[0])
-# # ans = cal.dt(train[1:], test[1:], train[0], test[0])
-#
+# tree = cal.init(train[1:], train[0])
+# ans = cal.predict(tree, test[1:], test[0])
+ans = cal.dt(train[1:], test[1:], train[0], test[0])
+
 a = 0
 b = 0
 for row in test[1:]:
@@ -42,3 +39,4 @@ for row in test[1:]:
         b = b + 1
     a = a + 1
 print(b/a)
+# cal.gauss(train, test, 'dt_answer1.txt')

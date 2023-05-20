@@ -2,14 +2,34 @@
 #include <cmath>
 #include <algorithm>
 #include "set"
+#include <cassert>
 
-double test(const std::vector<std::string> &l) {
-    std::cout << "cal installed! input string:\n";
-    for (const auto &str: l) {
-        std::cout << str << " ";
+int sum(std::vector<int> l) {
+    int num = 0;
+    for (auto n: l) {
+        num += n;
     }
-    std::cout << std::endl << "cal version:\t" << VERSION << std::endl;
-    return VERSION;
+    return num;
+}
+
+std::string dt(const std::vector<std::string> &strs) {
+    std::string a;
+    for (const auto &str: strs) {
+        a += str;
+    }
+    std::cout << a << std::endl;
+    return a;
+}
+
+std::string dt(const std::vector<std::vector<std::string>> &strss) {
+    std::string a;
+    for (const auto &strs: strss) {
+        for (const auto &str: strs) {
+            a += str;
+        }
+    }
+    std::cout << a << std::endl;
+    return a;
 }
 
 double findThreshold(const std::vector<Data> &data, const std::string &attribute) {
@@ -87,6 +107,51 @@ std::map<std::string, std::vector<Data>> splitData(const std::vector<Data> &data
                                                                                                  threshold);
 }
 
+void calculateInfoGainForNumericAttribute(const std::vector<Data> &data, const std::string &attribute, double &infoGain,
+                                          double &threshold) {
+    // 这里是一个示例，你可以根据实际需求选择不同的方法来计算信息增益和选择最佳阈值
+    // 例如，使用基于信息熵的方法来计算信息增益和选择最佳阈值
+    // 注意：该示例仅处理数值属性，不处理其他类型的属性
+
+    double bestInfoGain = 0.0;
+    double bestThreshold = 0.0;
+
+    // 获取属性的所有不同取值
+    std::set<double> uniqueValues;
+    for (const Data &instance: data) {
+        uniqueValues.insert(std::get<double>(instance.attributes.at(attribute)));
+    }
+
+    // 尝试每个可能的阈值，并计算信息增益
+    for (double value: uniqueValues) {
+        std::vector<Data> lessEqualData; // 属性值小于等于阈值的数据集
+        std::vector<Data> greaterData;   // 属性值大于阈值的数据集
+
+        for (const Data &instance: data) {
+            double attributeValue = std::get<double>(instance.attributes.at(attribute));
+            if (attributeValue <= value) {
+                lessEqualData.push_back(instance);
+            } else {
+                greaterData.push_back(instance);
+            }
+        }
+
+        double pLessEqual = static_cast<double>(lessEqualData.size()) / data.size();
+        double pGreater = static_cast<double>(greaterData.size()) / data.size();
+
+        infoGain = calculateEntropy(data) -
+                   (pLessEqual * calculateEntropy(lessEqualData) + pGreater * calculateEntropy(greaterData));
+
+        if (infoGain > bestInfoGain) {
+            bestInfoGain = infoGain;
+            bestThreshold = value;
+        }
+    }
+
+    infoGain = bestInfoGain;
+    threshold = bestThreshold;
+}
+
 double calculateInformationGain(const std::vector<Data> &data, const std::string &attribute) {
 
     double entropy = calculateEntropy(data);
@@ -143,30 +208,24 @@ std::string selectBestAttribute(const std::vector<Data> &data, const std::set<st
     return bestAttribute;
 }
 
-std::string theMost(const std::vector<Data> &data) {
-    std::string classification;
-    std::map<std::string, int> attr;
-    for (const Data &instance: data) {
-        attr[instance.class_label]++;
-    }
-    int maxnum = -1;
-    for (const auto &a: attr) {
-        if (a.second > maxnum) {
-            maxnum = a.second;
-            classification = a.first;
-        }
-    }
-    return classification;
-}
-
-std::pair<bool, std::string> shouldStop(const std::vector<Data> &data, const std::set<std::string> &attributes) {
+std::pair<bool, std::string> shouldStop(const std::vector<Data> &data, const std::set<std::string>& attributes) {
 //    assert(!data.empty());
-    if (data.empty()) {
+    if(data.empty()) {
         return std::make_pair(true, "nullptr");
     }
     std::string classification = data[0].class_label;
-    if (attributes.empty()) {
-        classification = theMost(data);
+    if(attributes.empty()) {
+        std::map<std::string, int> attr;
+        for (const Data &instance: data) {
+            attr[instance.class_label]++;
+        }
+        int maxnum = -1;
+        for(const auto& a: attr) {
+            if(a.second > maxnum) {
+                maxnum = a.second;
+                classification = a.first;
+            }
+        }
     } else {
         // 如果数据集为空或者最终分类的属性都相同，则停止构建决策树
         for (const Data &instance: data) {
@@ -174,85 +233,11 @@ std::pair<bool, std::string> shouldStop(const std::vector<Data> &data, const std
                 return std::make_pair(false, "");
             }
         }
+//        std::cout << data[0].class_label <<std::endl;
     }
 
     return std::make_pair(true, classification);
 }
-
-double calculateAccuracy(const DecisionTreeNode *node, const std::vector<Data> &validationData);
-
-void countClassOccurrences(const DecisionTreeNode *node, std::map<std::string, int> &classCounts) {
-    // 如果节点是叶子节点，则统计目标类别
-    if (node->branches.empty()) {
-        classCounts[node->attribute]++;
-        return;
-    }
-
-    // 递归统计子节点的目标类别
-    for (const auto &pair: node->branches) {
-        countClassOccurrences(pair.second, classCounts);
-    }
-}
-
-
-std::string determineMajorityClass(const DecisionTreeNode *node) {
-    std::map<std::string, int> classCounts;
-
-    // 统计每个类别的出现次数
-    countClassOccurrences(node, classCounts);
-
-    // 找到出现次数最多的类别
-    std::string majorityClass;
-    int maxCount = -1;
-
-    for (const auto &pair: classCounts) {
-        if (pair.second > maxCount) {
-            maxCount = pair.second;
-            majorityClass = pair.first;
-        }
-    }
-
-    return majorityClass;
-}
-
-
-void postPruning(DecisionTreeNode* &node, const std::vector<Data> &validationData) {
-    // 如果节点是叶子节点，直接返回
-    if (node->branches.empty()) {
-        return;
-    }
-
-    // 保存当前节点的子节点
-    auto originalBranches = node->branches;
-
-    // 计算当前节点在验证数据集上的准确率
-    double originalAccuracy = calculateAccuracy(node, validationData);
-    auto tmp = node->attribute;
-    // 将当前节点转换为叶子节点，并计算转换后的准确率
-    std::string majorityClass = determineMajorityClass(node);
-    node->attribute = majorityClass;
-    node->branches.clear();
-    double prunedAccuracy = calculateAccuracy(node, validationData);
-
-    // 如果转换后的准确率不低于原始准确率，则进行剪枝
-    if (prunedAccuracy >= originalAccuracy) {
-        for (auto &pair: originalBranches) {
-            delete pair.second;
-        }
-        originalBranches.clear();
-    }
-        // 否则，还原当前节点的子节点
-    else {
-        node->branches = originalBranches;
-        node->attribute = tmp;
-    }
-    std::cout << "tt\n";
-    // 递归处理子节点
-    for (auto &pair: node->branches) {
-        postPruning(pair.second, validationData);
-    }
-}
-
 
 //构建决策树
 DecisionTreeNode *buildDecisionTree(const std::vector<Data> &data, std::set<std::string> attributes) {
@@ -261,10 +246,11 @@ DecisionTreeNode *buildDecisionTree(const std::vector<Data> &data, std::set<std:
     auto [stop, attr] = shouldStop(data, attributes);
     // 检查停止条件
     if (stop) {
-        if (attr == "nullptr") {
+        if(attr == "nullptr") {
             return nullptr;
         }
         node->attribute = attr;
+//        std::cout << "stop:\t" << node->attribute << std::endl;
         node->type = attr;
         return node;
     }
@@ -285,13 +271,9 @@ DecisionTreeNode *buildDecisionTree(const std::vector<Data> &data, std::set<std:
 
     // 递归构建子节点
     for (const auto &pair: subsets) {
-        DecisionTreeNode *childNode;
-        if (pair.second.empty()) {
-            childNode = new DecisionTreeNode();
-            childNode->attribute = theMost(data);
-            childNode->type = childNode->attribute;
-        } else {
-            childNode = buildDecisionTree(pair.second, attributes);
+        DecisionTreeNode *childNode = buildDecisionTree(pair.second, attributes);
+        if(childNode == nullptr) {
+            continue;
         }
         node->branches[pair.first] = childNode;
     }
@@ -312,46 +294,61 @@ std::vector<Data> convertToData(const std::vector<std::vector<std::variant<int, 
             const std::string &attributeName = attributes[i];
             data.attributes[attributeName] = row[i];
         }
-        data.class_label = std::get<std::string>(row[row.size() - 1]);
+        data.class_label = std::get<std::string>(row[row.size()-1]);
 
+        // 添加到最终的 outputData 中
         outputData.push_back(data);
     }
+//    for(int i = 0; i < 5; i ++) {
+//        std::cout << outputData[i].class_label << std::endl;
+//    }
     return outputData;
 }
 
-DecisionTreeNode *dt_init(const std::vector<std::vector<std::variant<int, double, std::string>>> &inputData,
-                          const std::vector<std::string> &attributes, bool needPostPruning) {
+DecisionTreeNode *init(const std::vector<std::vector<std::variant<int, double, std::string>>> &inputData,
+                       const std::vector<std::string> &attributes) {
+//    printf("init\n");
     std::vector<Data> data = convertToData(inputData, attributes);
     std::set<std::string> set_attributes(attributes.begin(), attributes.end() - 1);
+//    std::cout << "build dt\n";
     auto node = buildDecisionTree(data, set_attributes);
-    if (needPostPruning) {
-        std::cout << "start prun\n";
-        postPruning(node, data);
-    }
+
     return node;
 }
-
+int global_i = 0;
 std::string predictImpl(const DecisionTreeNode *root,
                         const std::map<std::string, std::variant<int, double, std::string>> &instance) {
     const DecisionTreeNode *node = root;
-
+    global_i++;
     // 递归遍历决策树节点，直到到达叶子节点
     while (!node->branches.empty()) {
         const std::string &attribute = node->attribute;
+//        if(global_i > 75) {
+//            std::cout << "impl: " << global_i << "\t" << attribute <<std::endl;
+//        }
+//        std::cout << "impl\t " << attribute <<std::endl;
         const auto &value = instance.at(attribute);
         if (std::holds_alternative<double>(node->type)) {
-
             double threshold = std::get<double>(node->type);
+
+//            std::cout << std::get<int>(value) << std::endl;
             if (std::get<int>(value) <= threshold) {
                 node = node->branches.find("le")->second;
+//                if(global_i > 80) {
+//                    std::cout << "node->type: " << global_i << "\t" << threshold << "\t" << std::get<int>(value) <<std::endl;
+//                }
             } else {
                 node = node->branches.find("g")->second;
             }
         } else {
+//            std::cout << std::get<std::string>(value) << std::endl;
             auto it = node->branches.find(value);
             if (it != node->branches.end()) {
                 node = it->second;
             } else {
+//                if(global_i > 80) {
+//                    std::cout << "node->attribute: " << global_i << "\t" << attribute <<std::endl;
+//                }
                 return node->attribute;
             }
         }
@@ -361,39 +358,24 @@ std::string predictImpl(const DecisionTreeNode *root,
 }
 
 std::vector<std::string>
-dt_predict(const DecisionTreeNode *root,
-           const std::vector<std::vector<std::variant<int, double, std::string>>> &inputData,
-           const std::vector<std::string> &attributes) {
-    printf("start predict\n");
+predict(const DecisionTreeNode *root, const std::vector<std::vector<std::variant<int, double, std::string>>> &inputData,
+        const std::vector<std::string> &attributes) {
+//    std::cout << "start predict\n";
     const DecisionTreeNode *node = root;
     std::vector<Data> testdata = convertToData(inputData, attributes);
-
-    printf("start predict1\n");
     std::vector<std::string> ret;
-    ret.reserve(testdata.size());
     for (const auto &data: testdata) {
         ret.emplace_back(predictImpl(node, data.attributes));
     }
+//    std::cout << "finish predict\n";
     return ret;
 }
 
-std::vector<std::string> dt(const std::vector<std::vector<std::variant<int, double, std::string>>> &train_data,
-                            const std::vector<std::vector<std::variant<int, double, std::string>>> &test_data,
-                            const std::vector<std::string> &train_attributes,
-                            const std::vector<std::string> &test_attributes) {
-    return dt_predict(dt_init(train_data, train_attributes), test_data, test_attributes);
+std::vector<std::string> dt1(const std::vector<std::vector<std::variant<int, double, std::string>>> &data,
+                             const std::vector<std::vector<std::variant<int, double, std::string>>> &testData,
+                             const std::vector<std::string> &attributes,
+                             const std::vector<std::string> &testattributes) {
+    return predict(init(data, attributes), testData, testattributes);
 }
 
-double calculateAccuracy(const DecisionTreeNode *node, const std::vector<Data> &validationData) {
-    int correctPredictions = 0;
-
-    for (const Data &instance: validationData) {
-        if (predictImpl(node, instance.attributes) == instance.class_label) {
-            correctPredictions++;
-        }
-    }
-
-    double accuracy = static_cast<double>(correctPredictions) / validationData.size();
-    return accuracy;
-}
 

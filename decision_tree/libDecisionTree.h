@@ -5,8 +5,6 @@
 #ifndef DECISIONTREE_LIBDECISIONTREE_H
 #define DECISIONTREE_LIBDECISIONTREE_H
 
-#define VERSION 1
-
 #include <iostream>
 #include <utility>
 #include <vector>
@@ -28,19 +26,25 @@ struct Data {
     std::string class_label;                                                  // 类别
 };
 
-DecisionTreeNode *dt_init(const std::vector<std::vector<std::variant<int, double, std::string>>> &data,
-                       const std::vector<std::string> &attributes, bool needPostPruning = false);
+DecisionTreeNode *init(const std::vector<std::vector<std::variant<int, double, std::string>>> &data,
+                       const std::vector<std::string> &attributes);
 
-std::vector<std::string> dt_predict(const DecisionTreeNode *root,
+std::vector<std::string> predict(const DecisionTreeNode *root,
                                  const std::vector<std::vector<std::variant<int, double, std::string>>> &inputData,
                                  const std::vector<std::string> &attributes);
 
-std::vector<std::string> dt(const std::vector<std::vector<std::variant<int, double, std::string>>> &train_data,
-                            const std::vector<std::vector<std::variant<int, double, std::string>>> &test_data,
-                            const std::vector<std::string> &train_attributes,
-                            const std::vector<std::string> &test_attributes);
+std::vector<std::string> dt1(const std::vector<std::vector<std::variant<int, double, std::string>>> &data,
+                            const std::vector<std::vector<std::variant<int, double, std::string>>> &testData,
+                            const std::vector<std::string> &attributes,
+                            const std::vector<std::string> &testattributes);
 
-double test(const std::vector<std::string>&);
+int sum(std::vector<int>);
 
+std::string dt(const std::vector<std::string>&);
+
+std::string dt(const std::vector<std::vector<std::string>>&);
+
+void gauss(const std::vector<std::vector<std::string>> &train,
+           const std::vector<std::vector<std::string>> &test, const std::string &filename);
 
 #endif //DECISIONTREE_LIBDECISIONTREE_H
