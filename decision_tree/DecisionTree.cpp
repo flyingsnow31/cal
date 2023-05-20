@@ -72,7 +72,7 @@ public:
         cout << "<-- finish generating decision tree -->" << endl << endl;
     }
 
-    string guess(vector<string> row) {
+    string guess(const vector<string> &row) {
         string label;
         int leafNode = dfs(row, 0);
         if (leafNode == -1) {
@@ -82,7 +82,7 @@ public:
         return label;
     }
 
-    int dfs(vector<string> &row, int here) {
+    int dfs(const vector<string> &row, int here) {
         if (tree[here].isLeaf) {
             return here;
         }
