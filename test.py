@@ -2,7 +2,7 @@ import csv
 import cal
 train = []
 test = []
-with open('train-tree2.csv', encoding='utf-8-sig') as f:
+with open('train-tree.csv', encoding='utf-8-sig') as f:
     reader = csv.reader(f)
     for row in reader:
         row_data = []
@@ -14,7 +14,7 @@ with open('train-tree2.csv', encoding='utf-8-sig') as f:
                 row_data.append(value)  # 添加字符串到子列表
         train.append(row_data)
 f.close()
-with open('test-tree21.csv', encoding='utf-8-sig') as f:
+with open('test-tree.csv', encoding='utf-8-sig') as f:
     reader = csv.reader(f)
     for row in reader:
         row_data = []
@@ -31,7 +31,7 @@ f.close()
 #     print(type(t))
 # print(type(train[1][1]))
 
-tree = cal.dt_init(train[1:], train[0])
+tree = cal.dt_init(train[1:], train[0], True)
 ans = cal.dt_predict(tree, test[1:], test[0])
 # # ans = cal.dt(train[1:], test[1:], train[0], test[0])
 #
