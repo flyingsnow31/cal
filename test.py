@@ -6,7 +6,7 @@ with open('dt_train1.txt', encoding='utf-8-sig') as f:
     for row in csv.reader(f, skipinitialspace=True, delimiter="\t"):
         train.append(row)
 f.close()
-with open('dt_test1.txt', encoding='utf-8-sig') as f:
+with open('dt_test2.txt', encoding='utf-8-sig') as f:
     for row in csv.reader(f, skipinitialspace=True, delimiter="\t"):
         test.append(row)
 f.close()
