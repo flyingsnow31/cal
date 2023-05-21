@@ -29,7 +29,7 @@ struct Data {
 };
 
 DecisionTreeNode *dt_init(const std::vector<std::vector<std::variant<int, double, std::string>>> &data,
-                       const std::vector<std::string> &attributes);
+                       const std::vector<std::string> &attributes, bool needPostPruning = false);
 
 std::vector<std::string> dt_predict(const DecisionTreeNode *root,
                                  const std::vector<std::vector<std::variant<int, double, std::string>>> &inputData,

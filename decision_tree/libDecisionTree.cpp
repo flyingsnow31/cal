@@ -142,26 +142,31 @@ std::string selectBestAttribute(const std::vector<Data> &data, const std::set<st
     }
     return bestAttribute;
 }
-int global_j = 0;
+
+std::string theMost(const std::vector<Data> &data) {
+    std::string classification;
+    std::map<std::string, int> attr;
+    for (const Data &instance: data) {
+        attr[instance.class_label]++;
+    }
+    int maxnum = -1;
+    for (const auto &a: attr) {
+        if (a.second > maxnum) {
+            maxnum = a.second;
+            classification = a.first;
+        }
+    }
+    return classification;
+}
+
 std::pair<bool, std::string> shouldStop(const std::vector<Data> &data, const std::set<std::string> &attributes) {
 //    assert(!data.empty());
     if (data.empty()) {
-        std::cout << global_j++ << "\tempty\n";
         return std::make_pair(true, "nullptr");
     }
     std::string classification = data[0].class_label;
     if (attributes.empty()) {
-        std::map<std::string, int> attr;
-        for (const Data &instance: data) {
-            attr[instance.class_label]++;
-        }
-        int maxnum = -1;
-        for (const auto &a: attr) {
-            if (a.second > maxnum) {
-                maxnum = a.second;
-                classification = a.first;
-            }
-        }
+        classification = theMost(data);
     } else {
         // 如果数据集为空或者最终分类的属性都相同，则停止构建决策树
         for (const Data &instance: data) {
@@ -173,6 +178,81 @@ std::pair<bool, std::string> shouldStop(const std::vector<Data> &data, const std
 
     return std::make_pair(true, classification);
 }
+
+double calculateAccuracy(const DecisionTreeNode *node, const std::vector<Data> &validationData);
+
+void countClassOccurrences(const DecisionTreeNode *node, std::map<std::string, int> &classCounts) {
+    // 如果节点是叶子节点，则统计目标类别
+    if (node->branches.empty()) {
+        classCounts[node->attribute]++;
+        return;
+    }
+
+    // 递归统计子节点的目标类别
+    for (const auto &pair: node->branches) {
+        countClassOccurrences(pair.second, classCounts);
+    }
+}
+
+
+std::string determineMajorityClass(const DecisionTreeNode *node) {
+    std::map<std::string, int> classCounts;
+
+    // 统计每个类别的出现次数
+    countClassOccurrences(node, classCounts);
+
+    // 找到出现次数最多的类别
+    std::string majorityClass;
+    int maxCount = -1;
+
+    for (const auto &pair: classCounts) {
+        if (pair.second > maxCount) {
+            maxCount = pair.second;
+            majorityClass = pair.first;
+        }
+    }
+
+    return majorityClass;
+}
+
+
+void postPruning(DecisionTreeNode* &node, const std::vector<Data> &validationData) {
+    // 如果节点是叶子节点，直接返回
+    if (node->branches.empty()) {
+        return;
+    }
+
+    // 保存当前节点的子节点
+    auto originalBranches = node->branches;
+
+    // 计算当前节点在验证数据集上的准确率
+    double originalAccuracy = calculateAccuracy(node, validationData);
+    auto tmp = node->attribute;
+    // 将当前节点转换为叶子节点，并计算转换后的准确率
+    std::string majorityClass = determineMajorityClass(node);
+    node->attribute = majorityClass;
+    node->branches.clear();
+    double prunedAccuracy = calculateAccuracy(node, validationData);
+
+    // 如果转换后的准确率不低于原始准确率，则进行剪枝
+    if (prunedAccuracy >= originalAccuracy) {
+        for (auto &pair: originalBranches) {
+            delete pair.second;
+        }
+        originalBranches.clear();
+    }
+        // 否则，还原当前节点的子节点
+    else {
+        node->branches = originalBranches;
+        node->attribute = tmp;
+    }
+    std::cout << "tt\n";
+    // 递归处理子节点
+    for (auto &pair: node->branches) {
+        postPruning(pair.second, validationData);
+    }
+}
+
 
 //构建决策树
 DecisionTreeNode *buildDecisionTree(const std::vector<Data> &data, std::set<std::string> attributes) {
@@ -205,14 +285,15 @@ DecisionTreeNode *buildDecisionTree(const std::vector<Data> &data, std::set<std:
 
     // 递归构建子节点
     for (const auto &pair: subsets) {
-        DecisionTreeNode *childNode = buildDecisionTree(pair.second, attributes);
-        if (childNode == nullptr) {
-            continue;
+        DecisionTreeNode *childNode;
+        if (pair.second.empty()) {
+            childNode = new DecisionTreeNode();
+            childNode->attribute = theMost(data);
+            childNode->type = childNode->attribute;
+        } else {
+            childNode = buildDecisionTree(pair.second, attributes);
         }
         node->branches[pair.first] = childNode;
-    }
-    if( node->branches.size() == 1) {
-        std::cout << "only 1" << std::endl;
     }
 
     return node;
@@ -239,49 +320,34 @@ std::vector<Data> convertToData(const std::vector<std::vector<std::variant<int, 
 }
 
 DecisionTreeNode *dt_init(const std::vector<std::vector<std::variant<int, double, std::string>>> &inputData,
-                          const std::vector<std::string> &attributes) {
+                          const std::vector<std::string> &attributes, bool needPostPruning) {
     std::vector<Data> data = convertToData(inputData, attributes);
     std::set<std::string> set_attributes(attributes.begin(), attributes.end() - 1);
     auto node = buildDecisionTree(data, set_attributes);
-
+    if (needPostPruning) {
+        std::cout << "start prun\n";
+        postPruning(node, data);
+    }
     return node;
 }
-
-int global_i = 0;
 
 std::string predictImpl(const DecisionTreeNode *root,
                         const std::map<std::string, std::variant<int, double, std::string>> &instance) {
     const DecisionTreeNode *node = root;
-    global_i++;
+
     // 递归遍历决策树节点，直到到达叶子节点
     while (!node->branches.empty()) {
         const std::string &attribute = node->attribute;
-        if(global_i > 90) {
-            std::cout << "impl: " << global_i << "\t" << attribute <<std::endl;
-        }
         const auto &value = instance.at(attribute);
         if (std::holds_alternative<double>(node->type)) {
 
             double threshold = std::get<double>(node->type);
-            if(global_i > 90) {
-                std::cout << "double: " << global_i << "\t" <<  std::get<int>(value) << "\t" << threshold << std::endl;
-            }
             if (std::get<int>(value) <= threshold) {
                 node = node->branches.find("le")->second;
             } else {
-                if(global_i == 95) {
-                    std::cout << ">: " << global_i << "\t" << node->attribute << std::endl;
-                    std::cout << node->branches.size() << "\n";
-                }
                 node = node->branches.find("g")->second;
-                if(global_i > 90) {
-                    std::cout << ">>: " << global_i << "\t" << node->attribute << std::endl;
-                }
             }
         } else {
-            if(global_i > 90) {
-                std::cout << "string: " << global_i << "\t" <<  std::get<std::string>(value) << std::endl;
-            }
             auto it = node->branches.find(value);
             if (it != node->branches.end()) {
                 node = it->second;
@@ -306,7 +372,6 @@ dt_predict(const DecisionTreeNode *root,
     std::vector<std::string> ret;
     ret.reserve(testdata.size());
     for (const auto &data: testdata) {
-//        std::cout << "test: " << a++ <<std::endl;
         ret.emplace_back(predictImpl(node, data.attributes));
     }
     return ret;
@@ -319,4 +384,16 @@ std::vector<std::string> dt(const std::vector<std::vector<std::variant<int, doub
     return dt_predict(dt_init(train_data, train_attributes), test_data, test_attributes);
 }
 
+double calculateAccuracy(const DecisionTreeNode *node, const std::vector<Data> &validationData) {
+    int correctPredictions = 0;
+
+    for (const Data &instance: validationData) {
+        if (predictImpl(node, instance.attributes) == instance.class_label) {
+            correctPredictions++;
+        }
+    }
+
+    double accuracy = static_cast<double>(correctPredictions) / validationData.size();
+    return accuracy;
+}
 
