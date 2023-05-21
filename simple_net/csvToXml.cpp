@@ -19,13 +19,13 @@ int main() {
     Mat data = cv::Mat(mlData.get_values(), true);
     */
     // 1. 读取数据
-    Ptr<ml::TrainData> raw_data = ml::TrainData::loadFromCSV("./data/NetDataTest_noregular.csv", 1, -2, 0); // 1，-2必须设定，否则就会默认最后一列为输出变量
+    Ptr<ml::TrainData> raw_data = ml::TrainData::loadFromCSV("./data/TrainData_upper_add.csv", 1, -2, 0); // 1，-2必须设定，否则就会默认最后一列为输出变量
     Mat data = raw_data->getSamples();
     cout << "Data have been read successfully!" << endl;
     //Mat double_data;
     //data.convertTo(double_data, CV_64F);
     cout<<data.cols<<","<<data.rows<<endl; // 打印数据信息
-    Mat input_ = data(Rect(1, 0, 26, data.rows)).t(); // 转置
+    Mat input_ = data(Rect(1, 0, 36, data.rows)).t(); // 转置
     Mat label_ = data(Rect(0, 0, 1, data.rows)); // 标签在第一个
     Mat target_(2, input_.cols, CV_32F, Scalar::all(0.));
     cout<<"input_:"<<input_.cols<<","<<input_.rows<<endl;
@@ -55,7 +55,7 @@ int main() {
 //    float label0 = target_.at<float>(0, 0);
 //    cout << label0 << endl;
 //
-    string filename = "./data/input_label_0-1_test_no.xml";
+    string filename = "./data/input_label_0-1_train_upper_add.xml";
     FileStorage fs(filename, FileStorage::WRITE);
     fs << "input" << input_;
     fs << "target" << target_; // Write cv::Mat

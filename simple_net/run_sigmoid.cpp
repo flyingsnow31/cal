@@ -3,7 +3,7 @@
 //
 // only for test and use
 /**
-g++ Function.h Function.cpp libNet.h libNet.cpp run_sigmoid.cpp -o sigNet  $(pkg-config --cflags --libs opencv4)
+g++ Function.cpp libNet.cpp run_sigmoid.cpp -o sigNet  $(pkg-config --cflags --libs opencv4)
  */
 #include "libNet.h"
 #include <ctime>
