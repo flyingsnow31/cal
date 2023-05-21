@@ -2,7 +2,7 @@ import csv
 import cal
 train = []
 test = []
-with open('train-tree.csv', encoding='utf-8-sig') as f:
+with open('train-tree2.csv', encoding='utf-8-sig') as f:
     reader = csv.reader(f)
     for row in reader:
         row_data = []
@@ -14,7 +14,7 @@ with open('train-tree.csv', encoding='utf-8-sig') as f:
                 row_data.append(value)  # 添加字符串到子列表
         train.append(row_data)
 f.close()
-with open('test-tree.csv', encoding='utf-8-sig') as f:
+with open('test-tree21.csv', encoding='utf-8-sig') as f:
     reader = csv.reader(f)
     for row in reader:
         row_data = []
@@ -26,12 +26,15 @@ with open('test-tree.csv', encoding='utf-8-sig') as f:
                 row_data.append(value)  # 添加字符串到子列表
         test.append(row_data)
 f.close()
-# print(cal.sum([1,2,3]))
+# print(train[:10])
+# for t in train[1]:
+#     print(type(t))
+# print(type(train[1][1]))
 
-# tree = cal.init(train[1:], train[0])
-# ans = cal.predict(tree, test[1:], test[0])
-ans = cal.dt(train[1:], test[1:], train[0], test[0])
-
+tree = cal.dt_init(train[1:], train[0])
+ans = cal.dt_predict(tree, test[1:], test[0])
+# # ans = cal.dt(train[1:], test[1:], train[0], test[0])
+#
 a = 0
 b = 0
 for row in test[1:]:
@@ -39,4 +42,3 @@ for row in test[1:]:
         b = b + 1
     a = a + 1
 print(b/a)
-# cal.gauss(train, test, 'dt_answer1.txt')
