@@ -1,9 +1,11 @@
-cmake_minimum_required(VERSION 3.25)
-project(DecisionTree)
+cmake_minimum_required(VERSION 3.23)
+project(ML)
 
 set(CMAKE_CXX_STANDARD 17)
-
+set(OpenCV_DIR "S:/opencv/build")
+find_package(OpenCV REQUIRED)
 find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
-add_library(DecisionTree SHARED decision_tree/libDecisionTree.cpp pyWrapp.cpp decision_tree/DecisionTree.cpp)
+add_library(ML SHARED decision_tree/libDecisionTree.cpp pyWrapp.cpp decision_tree/DecisionTree.cpp simple_net/libNet.cpp simple_net/libNet.h simple_net/run_sigmoid.cpp simple_net/Function.cpp simple_net/Function.h simple_net/csv2xml.cpp simple_net/csvToXml.cpp)
 target_include_directories(${PROJECT_NAME} PRIVATE ${Python3_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} ${Python3_LIBRARIES})
+target_link_libraries(ML ${OpenCV_LIBSr})
