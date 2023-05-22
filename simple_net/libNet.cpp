@@ -283,7 +283,7 @@ namespace CuiQin {
                 }
                 if (epoch % 100 == 0)
                 {
-//                    learning_rate *= fine_tune_factor; // 考虑不用微调
+                    learning_rate *= fine_tune_factor; // 考虑不用微调
                 }
             }
             std::cout << std::endl << "Number of epoch: " << epoch << std::endl;
@@ -454,6 +454,15 @@ namespace CuiQin {
         fs["activation_function"] >> activation_function;
 
         fs.release();
+    }
+
+    libNet::libNet(std::vector<int> layer_neuron_num_, double learning_rate_, std::string activation_function_, int output_interval_, double fine_tune_factor_, std::string log_path_) {
+        layer_neuron_num = layer_neuron_num_;
+        activation_function = activation_function_;
+        output_interval = output_interval_;
+        learning_rate = learning_rate_;
+        fine_tune_factor = fine_tune_factor_;
+        log_path = log_path_;
     }
 
     /**

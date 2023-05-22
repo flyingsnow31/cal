@@ -13,7 +13,7 @@ using namespace CuiQin;
 
 int main(int args, char* argv[]) {
     // 设置层级数量
-    vector<int> layer_neuron_num = { 26,50,50,2 }; // 26个特征 2个输出
+    vector<int> layer_neuron_num = { 26,50,2 }; // 26个特征 2个输出
     // 初始化网络和权重
     libNet net;
     net.initNet(layer_neuron_num);
@@ -23,8 +23,8 @@ int main(int args, char* argv[]) {
 
     // 获得训练和测试数据
     Mat input, label, test_input, test_label;
-    get_input_label("./data/input_label_0-1_train.xml", input, label, 1504);
-    get_input_label("./data/input_label_0-1_test.xml", test_input, test_label, 294);
+    get_input_label("./data/input_label_0-1_train_smote.xml", input, label, 1504);
+    get_input_label("./data/input_label_0-1_test_smote.xml", test_input, test_label, 294);
 //    get_input_label("./data/input_label_0-9_1000.xml", input, label, 800);
 //    get_input_label("./data/input_label_0-9_1000.xml", test_input, test_label, 200,800);
 
@@ -32,7 +32,7 @@ int main(int args, char* argv[]) {
     float loss_threshold = 1;
     net.learning_rate = 0.0005;
     net.output_interval = 20;
-    net.activation_function = "ReLU";
+    net.activation_function = "PReLU";
 
     int max_epoch = 100000;
 
@@ -46,7 +46,7 @@ int main(int args, char* argv[]) {
     timeStr<<now->tm_hour<<"_";
     timeStr<<now->tm_min<<"_";
     timeStr<<now->tm_sec;
-    std::string log_path = "./data/relu_" + timeStr.str() + ".csv";
+    std::string log_path = "./data/prelu_" + timeStr.str() + ".csv";
     net.log_path = log_path;
 
     // 训练然后绘图？
@@ -58,6 +58,6 @@ int main(int args, char* argv[]) {
      * todo 将训练过程中输出的epoch,loss输出到csv文件，方便进行绘图整理，同时研究最小
      */
     //Save the model
-    net.save("./models/model_relu_1_0.0005_20_100000_{26_50_50_2}.xml");
+    net.save("./models/model_prelu_1_0.0005_20_500000_{26_50_2}.xml");
     return 0;
 }

@@ -19,7 +19,7 @@ int main() {
     Mat data = cv::Mat(mlData.get_values(), true);
     */
     // 1. 读取数据
-    Ptr<ml::TrainData> raw_data = ml::TrainData::loadFromCSV("./data/TrainData_upper_add.csv", 1, -2, 0); // 1，-2必须设定，否则就会默认最后一列为输出变量
+    Ptr<ml::TrainData> raw_data = ml::TrainData::loadFromCSV("./data/TestData_upper_add.csv", 1, -2, 0); // 1，-2必须设定，否则就会默认最后一列为输出变量
     Mat data = raw_data->getSamples();
     cout << "Data have been read successfully!" << endl;
     //Mat double_data;
@@ -55,7 +55,7 @@ int main() {
 //    float label0 = target_.at<float>(0, 0);
 //    cout << label0 << endl;
 //
-    string filename = "./data/input_label_0-1_train_upper_add.xml";
+    string filename = "./data/input_label_0-1_test_upper_add.xml";
     FileStorage fs(filename, FileStorage::WRITE);
     fs << "input" << input_;
     fs << "target" << target_; // Write cv::Mat
