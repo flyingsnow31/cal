@@ -17,6 +17,9 @@ namespace CuiQin {
     //ReLU function
     cv::Mat ReLU(cv::Mat &x);
 
+    //PReLU function
+    cv::Mat PReLU(cv::Mat &x);
+
     //Derivative function
     cv::Mat derivativeFunction(cv::Mat& fx, std::string func_type);
 

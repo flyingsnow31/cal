@@ -13,7 +13,7 @@ using namespace CuiQin;
 
 int main(int args, char* argv[]) {
     // 设置层级数量
-    vector<int> layer_neuron_num = { 26,50,2 }; // 26个特征 2个输出
+    vector<int> layer_neuron_num = { 36,50,2 }; // 26个特征 2个输出
     // 初始化网络和权重
     libNet net;
     net.initNet(layer_neuron_num);
@@ -23,18 +23,18 @@ int main(int args, char* argv[]) {
 
     // 获得训练和测试数据
     Mat input, label, test_input, test_label;
-    get_input_label("./data/input_label_0-1_train.xml", input, label, 1504);
-    get_input_label("./data/input_label_0-1_test.xml", test_input, test_label, 294);
+    get_input_label("./data/input_label_0-1_train_upper_add.xml", input, label, 260);
+    get_input_label("./data/input_label_0-1_test_upper_add.xml", test_input, test_label, 294);
 //    get_input_label("./data/input_label_0-9_1000.xml", input, label, 800);
 //    get_input_label("./data/input_label_0-9_1000.xml", test_input, test_label, 200,800);
 
     // 设置参数
-    float loss_threshold = 20;
+    float loss_threshold = 1;
     net.learning_rate = 0.01;
     net.output_interval = 20;
     net.activation_function = "sigmoid";
 
-    int max_epoch = 100000;
+    int max_epoch = 500000;
 
     // 获取当前时间
     time_t t = time(nullptr);
@@ -46,7 +46,7 @@ int main(int args, char* argv[]) {
     timeStr<<now->tm_hour<<"_";
     timeStr<<now->tm_min<<"_";
     timeStr<<now->tm_sec;
-    std::string log_path = "./data/sigmoid_" + timeStr.str() + ".csv";
+    std::string log_path = "./data/sigmoid_upper_add_" + timeStr.str() + ".csv";
     net.log_path = log_path;
 
     // 训练然后绘图？
@@ -58,6 +58,6 @@ int main(int args, char* argv[]) {
      * todo 将训练过程中输出的epoch,loss输出到csv文件，方便进行绘图整理，同时研究最小
      */
     //Save the model
-    net.save("./models/model_sigmoid_20_0.1_20_100000_{26_50_2}.xml");
+    net.save("./models/model_sigmoid_1_0.01_20_500000_{26_50_2}_upper_add.xml");
     return 0;
 }

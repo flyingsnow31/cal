@@ -41,6 +41,23 @@ namespace CuiQin {
         return fx;
     }
 
+    //ReLU function
+    cv::Mat PReLU(cv::Mat &x)
+    {
+        cv::Mat fx = x;
+        for (int i = 0; i < fx.rows; i++)
+        {
+            for (int j = 0; j < fx.cols; j++)
+            {
+                if (fx.at<float>(i, j) < 0)
+                {
+                    fx.at<float>(i, j) = fx.at<float>(i, j) * 0.5;
+                }
+            }
+        }
+        return fx;
+    }
+
     //Derivative function
     cv::Mat derivativeFunction(cv::Mat& fx, std::string func_type)
     {

@@ -22,7 +22,7 @@ namespace CuiQin {
         double learning_rate; // 学习率
         double accuracy = 0.; // 准确率
         std::vector<double> loss_vec; // 各层损失
-        float fine_tune_factor = 1.01; // 微调
+        double fine_tune_factor = 1.0; // 微调
         std::string log_path;
     protected:
         std::vector<cv::Mat> layer; // 各层神经元，矩阵输入
@@ -37,6 +37,7 @@ namespace CuiQin {
 
     public:
         libNet() {};
+        libNet(std::vector<int> layer_neuron_num, double learning_rate, std::string activation_function = "sigmoid", int output_interval=20, double fine_tune_factor=1.0, std::string log_path="./output_log.csv");
         ~libNet() {};
         // 初始化
         void initNet(std::vector<int> layer_neuron_num_); // 初始化网络
@@ -65,5 +66,6 @@ namespace CuiQin {
 
     // Draw loss curve
     void draw_curve(cv::Mat& board, std::vector<double> points);
+    std::tuple<cv::Mat, cv::Mat> get_data(std::string data_path, int features_nums);
 } // CuiQin
 

@@ -40,6 +40,8 @@ std::vector<std::string> dt(const std::vector<std::vector<std::variant<int, doub
                             const std::vector<std::string> &train_attributes,
                             const std::vector<std::string> &test_attributes);
 
+//std::string printTree(DecisionTreeNode* node);
+
 double test(const std::vector<std::string>&);
 
 

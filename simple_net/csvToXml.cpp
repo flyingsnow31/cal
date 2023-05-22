@@ -12,7 +12,7 @@ using namespace cv;
 g++ csvToXml.cpp -o dataset $(pkg-config --cflags --libs opencv4)
  * @return
  */
-int main() {
+int csv2xml(string input, string output, int num) {
     /** opencv2.x
     CvMLData mlData;
     mlData.read_csv("NetDataTrain.csv");

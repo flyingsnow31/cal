@@ -283,7 +283,7 @@ namespace CuiQin {
                 }
                 if (epoch % 100 == 0)
                 {
-//                    learning_rate *= fine_tune_factor; // 考虑不用微调
+                    learning_rate *= fine_tune_factor; // 考虑不用微调
                 }
             }
             std::cout << std::endl << "Number of epoch: " << epoch << std::endl;
@@ -456,6 +456,15 @@ namespace CuiQin {
         fs.release();
     }
 
+    libNet::libNet(std::vector<int> layer_neuron_num_, double learning_rate_, std::string activation_function_, int output_interval_, double fine_tune_factor_, std::string log_path_) {
+        layer_neuron_num = layer_neuron_num_;
+        activation_function = activation_function_;
+        output_interval = output_interval_;
+        learning_rate = learning_rate_;
+        fine_tune_factor = fine_tune_factor_;
+        log_path = log_path_;
+    }
+
     /**
      * 读取数据
      * @param filename 数据文件
@@ -497,5 +506,19 @@ namespace CuiQin {
         }
         cv::imshow("Loss", board);
         cv::waitKey(1);
+    }
+    std::tuple<cv::Mat, cv::Mat> get_data(std::string data_path, int features_nums) {
+        // 1. 读取数据
+        cv::Ptr<cv::ml::TrainData> raw_data = cv::ml::TrainData::loadFromCSV(data_path, 1, -2, 0); // 1，-2必须设定，否则就会默认最后一列为输出变量
+        cv::Mat data = raw_data->getSamples();
+        cv::Mat input_ = data(cv::Rect(1, 0, features_nums, data.rows)).t(); // 转置
+        cv::Mat label_ = data(cv::Rect(0, 0, 1, data.rows)); // 标签在第一个
+        cv::Mat target_(2, input_.cols, CV_32F, cv::Scalar::all(0.));
+        for (int i = 0; i < label_.rows; ++i)
+        {
+            float label_num = label_.at<float>(i, 0);
+            target_.at<float>(label_num, i) = label_num;
+        }
+        return std::make_pair(input_, target_);
     }
 } // CuiQin
