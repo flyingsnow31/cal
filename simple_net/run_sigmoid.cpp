@@ -21,20 +21,26 @@ int main(int args, char* argv[]) {
     cv::Scalar s = Scalar(0.5); // 不能直接作为参数传进去
     net.initBias(s);
 
+    std::string curType = "smote"; // no, smote , smote_add, upper, upper_add
+
     // 获得训练和测试数据
     Mat input, label, test_input, test_label;
-    get_input_label("./data/input_label_0-1_train.xml", input, label, 1504);
-    get_input_label("./data/input_label_0-1_test.xml", test_input, test_label, 294);
-//    get_input_label("./data/input_label_0-9_1000.xml", input, label, 800);
-//    get_input_label("./data/input_label_0-9_1000.xml", test_input, test_label, 200,800);
+    std::string train_data_path = "./data/input_label_0-1_train_"+curType+".xml";
+    std::string test_data_path = "./data/input_label_0-1_test_"+curType+".xml";
+    get_input_label(train_data_path, input, label, 1504);
+    get_input_label(test_data_path, test_input, test_label, 294);
+
+    std::cout<< "训练集路径: " <<train_data_path <<std::endl;
+    std::cout<< "测试集路径: " <<test_data_path <<std::endl;
 
     // 设置参数
-    float loss_threshold = 20;
-    net.learning_rate = 0.01;
+    float loss_threshold = 1;
+    float learning_rate = 0.01;
+    net.learning_rate = learning_rate;
     net.output_interval = 20;
     net.activation_function = "sigmoid";
 
-    int max_epoch = 100000;
+    int max_epoch = 500000;
 
     // 获取当前时间
     time_t t = time(nullptr);
@@ -46,7 +52,7 @@ int main(int args, char* argv[]) {
     timeStr<<now->tm_hour<<"_";
     timeStr<<now->tm_min<<"_";
     timeStr<<now->tm_sec;
-    std::string log_path = "./data/sigmoid_" + timeStr.str() + ".csv";
+    std::string log_path = "./data/sigmoid_"+curType+"_"+ timeStr.str() + ".csv";
     net.log_path = log_path;
 
     // 训练然后绘图？
@@ -58,6 +64,14 @@ int main(int args, char* argv[]) {
      * todo 将训练过程中输出的epoch,loss输出到csv文件，方便进行绘图整理，同时研究最小
      */
     //Save the model
-    net.save("./models/model_sigmoid_20_0.1_20_100000_{26_50_2}.xml");
+    // 激活函数 + loss + 学习率 + 最大次数 + 网络结构 + 当前数据集
+    stringstream lossStrStream,learningStream,maxepochStream;
+    lossStrStream<<loss_threshold;
+    learningStream<<learning_rate;
+    maxepochStream<<max_epoch;
+    std::string loss = lossStrStream.str();
+    std::string learning = learningStream.str();
+    std::string maxepoch = maxepochStream.str();
+    net.save("./models/model_sigmoid_"+loss+"_"+learning+"_"+maxepoch+"_{26_50_2}_"+curType+".xml");
     return 0;
 }
