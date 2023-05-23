@@ -31,7 +31,7 @@ f.close()
 #     print(type(t))
 # print(type(train[1][1]))
 
-tree = cal.dt_init(train[1:], train[0], False)
+tree = cal.dt_init(train[1:], train[0], True)
 ans = cal.dt_predict(tree, test[1:], test[0])
 
 
