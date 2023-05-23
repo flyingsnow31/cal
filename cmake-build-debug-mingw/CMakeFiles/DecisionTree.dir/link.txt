@@ -1,0 +1,3 @@
+"S:\CLion 2022.2\bin\cmake\win\bin\cmake.exe" -E rm -f CMakeFiles\DecisionTree.dir/objects.a
+S:\CLION2~1.2\bin\mingw\bin\ar.exe qc CMakeFiles\DecisionTree.dir/objects.a @CMakeFiles\DecisionTree.dir\objects1.rsp
+S:\CLION2~1.2\bin\mingw\bin\G__~1.EXE -g -shared -o libDecisionTree.dll -Wl,--out-implib,libDecisionTree.dll.a -Wl,--major-image-version,0,--minor-image-version,0 -Wl,--whole-archive CMakeFiles\DecisionTree.dir/objects.a -Wl,--no-whole-archive @CMakeFiles\DecisionTree.dir\linklibs.rsp

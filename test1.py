@@ -1,23 +1,16 @@
-import pandas as pd
 import cal
 
-train_data = pd.read_csv("train-tree.csv", dtype={'JobLevel': str, 'StockOptionLevel': str, 'JobInvolvement': str})
-test_data = pd.read_csv("test-tree.csv", dtype={'JobLevel': str, 'StockOptionLevel': str, 'JobInvolvement': str})
-train = train_data.values.tolist()
-test = test_data.values.tolist()
-traint=train_data.columns.tolist()
-testt=test_data.columns.tolist()
-print(testt)
-print(traint)
+train_file = 'simple_net/data/TrainData_upper.csv'
+test_file = 'simple_net/data/TestData_upper.csv'
 
-tree = cal.dt_init(train, traint)
-ans = cal.dt_predict(tree, test, testt)
-# # ans = cal.dt(train[1:], test[1:], train[0], test[0])
-#
-a = 0
-b = 0
-for row in test[1:]:
-    if ans[a] == row[-1]:
-        b = b + 1
-    a = a + 1
-print(b / a)
+(train_data, train_attr) = cal.get_data(train_file, 26)
+(test_data, test_attr) = cal.get_data(test_file, 26)
+
+net = cal.libNet([26, 50, 2], 0.01, "sigmoid", 20, 1.0, "./output_log.csv", True)
+
+net.train(train_data, train_attr, 1, 500000, False)
+
+net.test(test_data, test_attr)
+
+net.save()
+
