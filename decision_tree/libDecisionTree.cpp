@@ -2,6 +2,7 @@
 #include <cmath>
 #include <algorithm>
 #include "set"
+//#include "json/json.h"
 
 double test(const std::vector<std::string> &l) {
     std::cout << "cal installed! input string:\n";
@@ -396,4 +397,13 @@ double calculateAccuracy(const DecisionTreeNode *node, const std::vector<Data> &
     double accuracy = static_cast<double>(correctPredictions) / validationData.size();
     return accuracy;
 }
+
+//void traverseNode(DecisionTreeNode* node, Json::Value& value) {
+//
+//}
+//
+//std::string printTree(DecisionTreeNode* node) {
+//    Json::Value root(Json::objectValue);
+//    traverseNode(node, root);
+//}
 
